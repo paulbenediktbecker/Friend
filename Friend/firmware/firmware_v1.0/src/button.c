@@ -201,42 +201,13 @@ void check_button_level(struct k_work *work_item)
         }
     } 
 
-    // Check for single tap
-    if (btn_state == BUTTON_RELEASED && !btn_is_pressed) {
-        uint32_t press_duration = (btn_release_time - btn_press_start_time)*BUTTON_CHECK_INTERVAL;
-        if (press_duration < TAP_THRESHOLD && btn_last_tap_time > 0 && (current_time - btn_press_start_time)*BUTTON_CHECK_INTERVAL > TAP_THRESHOLD) {
-            event = BUTTON_EVENT_SINGLE_TAP;
-            btn_last_tap_time = 0;
-        } else if ((current_time - btn_press_start_time)*BUTTON_CHECK_INTERVAL > TAP_THRESHOLD) {
-            event = BUTTON_EVENT_RELEASE;
-        }
-    }
 
     // Check for long press
+    //triggers heyomi
     if (btn_is_pressed && (current_time - btn_press_start_time)*BUTTON_CHECK_INTERVAL >= LONG_PRESS_TIME) {
         event = BUTTON_EVENT_LONG_PRESS;
     }
 
-    // Single tap
-    if (event == BUTTON_EVENT_SINGLE_TAP)
-    {
-        LOG_PRINTK("single tap detected\n");
-        btn_last_event = event;
-        notify_tap();
-
-        // Enter the low power mode
-        is_off = true;
-        bt_off();
-        turnoff_all();
-    }
-
-    // Double tap
-    if (event == BUTTON_EVENT_DOUBLE_TAP)
-    {
-        LOG_PRINTK("double tap detected\n");
-        btn_last_event = event;
-        notify_double_tap();
-    }
 
     // Long press, one time event
     if (event == BUTTON_EVENT_LONG_PRESS && btn_last_event != BUTTON_EVENT_LONG_PRESS)
@@ -258,6 +229,11 @@ void check_button_level(struct k_work *work_item)
         btn_press_start_time = 0;
         btn_release_time = 0;
         btn_last_tap_time = 0;
+
+        // Enter the low power mode
+        is_off = true;
+        bt_off();
+        turnoff_all();
     }
     if (event == BUTTON_EVENT_RELEASE)
     {
